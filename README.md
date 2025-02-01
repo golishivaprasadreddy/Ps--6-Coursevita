@@ -29,7 +29,7 @@ To get started with the **MERN Starter Template**, please follow the appropriate
 
 ## Setup Instructions
 - [Windows Setup](./.github/WINDOWS.md)
-- [Mac Setup](./.github/MAC.md)
+- [Mac Setup](./.github/MACOS.md)
 
 ### Folder Structure
 
