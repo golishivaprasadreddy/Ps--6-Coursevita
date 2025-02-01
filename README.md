@@ -1,86 +1,43 @@
-# MERN Starter Template with TypeScript
+# MERN Starter Template
 
-This is a starter template for a MERN stack application using TypeScript.
+A starter template for building full-stack applications using the **MERN** stack (MongoDB, Express, React, Node.js) with **TypeScript** support for both frontend and backend.
 
-## Technologies Used
+### Technologies Used
 
-### Client Side
+#### **Client Side**
 
-- **React (Vite)**
-- **React Router DOM**
-- **Tailwind CSS**
-- **TypeScript**
+- **React (Vite)**: A fast, modern, and highly optimized build tool for React applications.
+- **React Router DOM**: Used for handling client-side routing.
+- **Tailwind CSS**: A utility-first CSS framework for rapidly building custom designs.
+- **TypeScript**: A typed superset of JavaScript, enabling better tooling, code reliability, and maintainability.
 
-### Server Side
+#### **Server Side**
 
-- **Express with TypeScript**
+- **Express with TypeScript**: A minimalist web framework for building RESTful APIs, enhanced with TypeScript support for better type safety.
+- **Node.js**: A JavaScript runtime for building server-side applications.
 
+### Features
 
-## Getting Started
+- **Full-Stack MERN Application**: Complete setup for frontend (React) and backend (Express) to get started with MERN projects.
+- **TypeScript Support**: Pre-configured with TypeScript for both the client and server to ensure type safety and better developer experience.
+- **Tailwind CSS**: Quickly style your frontend using utility-first CSS classes.
+- **Fast Development Setup**: Ready-to-use development environment for both the client and server with easy commands to run and manage both.
 
-Follow these instructions to set up the project on your local machine.
+### Getting Started
 
-### Prerequisites
+To get started with the **MERN Starter Template**, please follow the appropriate instructions for your operating system:
 
-Make sure you have the following installed on your machine:
-
-- Node.js
-- Yarn
-
-### Installation
-
-1. **Clone the repository:**
-
-    ```bash
-    git clone https://github.com/krisnachaitanya/mern-starter.git <your_project>
-    ```
-
-2. **Navigate to the client directory and install dependencies:**
-
-    ```bash
-    cd client   # Make sure you are in root directory
-    yarn install
-    ```
-
-3. **Navigate to the server directory and install dependencies:**
-
-    ```bash
-    cd server   # Make sure you are in root directory
-    yarn install
-    ```
-
-Your production-level project environment is now ready.
-
-### Running the Application
-
-To start the development server, follow these steps:
-
-1. **Start the client:**
-
-    ```bash
-    cd client   # Make sure you are in root directory
-    yarn start
-    ```
-
-2. **Start the server:**
-
-    ```bash
-    cd server   # Make sure you are in root directory   
-    yarn start
-    ```
+- **For Windows - Follow the Windows guide** 
+- **For Mac/Linux - Follow the Linux guide**
 
 ### Folder Structure
 
 ```
 MERN-Starter/
-├── client/   # Frontend application
-├── server/   # Backend application
-└── docker/   # Docker related files
+├── client/   # Frontend application (React + Tailwind CSS + TypeScript)
+├── server/   # Backend application (Express + Node.js + TypeScript)
+└── docker/   # Docker related files (if applicable)
 ```
-
-### Contributing
-
-Feel free to submit issues and pull requests.
 
 ### License
 
