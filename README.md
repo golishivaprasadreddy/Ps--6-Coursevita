@@ -27,8 +27,9 @@ A starter template for building full-stack applications using the **MERN** stack
 
 To get started with the **MERN Starter Template**, please follow the appropriate instructions for your operating system:
 
-- **For Windows - Follow the Windows guide** 
-- **For Mac/Linux - Follow the Linux guide**
+## Setup Instructions
+- [Windows Setup](./.github/WINDOWS.md)
+- [Mac Setup](./.github/MAC.md)
 
 ### Folder Structure
 
