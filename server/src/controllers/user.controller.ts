@@ -88,6 +88,12 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
   }
 };
 
+export const logoutUser = async (req: Request, res: Response) => {
+  res.clearCookie("token");
+  res.status(200).json({ message: "Logged out successfully" });
+  return;
+}
+
 export const pay = async (req: Request, res: Response) => {
   try {
     const { amount, currency } = req.body;

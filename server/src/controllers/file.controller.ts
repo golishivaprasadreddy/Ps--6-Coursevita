@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { s3Client } from "../config/aws-config";
-import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import crypto from "crypto";
 import { fileModel } from "../models/file.model";
@@ -49,10 +49,9 @@ export const saveFile = async (req: Request, res: Response) => {
       return;
     }
 
-    // Extract key correctly without leading slash
     let key = new URL(url).pathname;
     if (key.startsWith("/")) {
-      key = key.substring(1); // Remove leading "/"
+      key = key.substring(1);
     }
 
     const file = await fileModel.create({ name, type, size, url, key, admin });
@@ -96,6 +95,46 @@ export const getDownloadUrl = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error generating pre-signed download URL:", error);
     res.status(500).json({ error: "Failed to generate pre-signed URL" });
+    return;
+  }
+};
+
+export const deleteFile = async (req: Request, res: Response) => {
+  try {
+    const { fileId } = req.params;
+    const admin = req.userId;
+
+    if (!fileId) {
+      res.status(400).json({ error: "File ID is required" });
+      return;
+    }
+
+    // Find file in DB
+    const file = await fileModel.findById(fileId);
+    if (!file) {
+      res.status(404).json({ error: "File not found" });
+      return;
+    }
+
+    // Delete from S3
+    if (file.key) {
+      const deleteCommand = new DeleteObjectCommand({
+        Bucket: "coursevita-kc",
+        Key: file.key,
+      });
+
+      await s3Client.send(deleteCommand);
+    }
+
+    // Delete file from DB
+    await fileModel.findByIdAndDelete(fileId);
+    await userModel.findByIdAndUpdate(admin, { $pull: { files: fileId } });
+
+    res.json({ message: "File deleted successfully" });
+    return;
+  } catch (error) {
+    console.error("Error deleting file:", error);
+    res.status(500).json({ error: "Failed to delete file" });
     return;
   }
 };
