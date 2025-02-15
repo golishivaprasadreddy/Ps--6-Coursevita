@@ -15,3 +15,17 @@ CloudDrive is a cloud-based file storage and management system that allows users
 **Real-Time Syncing:** Changes are updated instantly across devices.
 
 **Secure Storage:** Encryption ensures data safety and privacy.
+
+**Tech Stack**
+
+**Frontend:** React.js, Tailwind CSS, TypeScript
+
+**Backend:** Node.js, Express.js, TypeScript
+
+**Database:** MongoDB with Mongoose
+
+**Storage:** Cloudinary/AWS S3
+
+**Authentication:** JWT (JSON Web Token)
+
+**Package Manager:** Yarn
