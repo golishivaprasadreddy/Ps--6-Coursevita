@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { userModel } from "../models/user.model";
 import { hashSync, compareSync } from "bcryptjs";
 import { generateToken } from "../utils/generateToken";
+import razorpay from "../config/razorpay";
+import crypto from "crypto";
 
 export const signupUser = async (req: Request, res: Response): Promise<void> => {
   const { email, password, fullName } = req.body;
@@ -42,7 +44,7 @@ export const signinUser = async (req: Request, res: Response): Promise<void> => 
 
 export const updateUser = async (req: Request, res: Response): Promise<void> => {
   const { fullName, avatar, password } = req.body;
-  const userId = req.userId; 
+  const userId = req.userId;
 
   if (!userId) {
     res.status(401).json({ message: "Unauthorized" });
@@ -78,4 +80,39 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
   }
 
   res.status(200).json(user);
+};
+
+export const pay = async (req: Request, res: Response) => {
+  try {
+    const { amount, currency } = req.body;
+
+    const options = {
+      amount: amount * 100,
+      currency: currency || "INR",
+      receipt: `receipt_${Date.now()}`,
+      payment_capture: 1,
+    };
+
+    const order = await razorpay.orders.create(options);
+    res.json(order);
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+export const verifyPayment = async(req: Request, res: Response) => {
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+  const body = `${razorpay_order_id}|${razorpay_payment_id}`;
+  const expectedSignature = crypto
+    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET ?? "")
+    .update(body)
+    .digest("hex");
+
+  if (expectedSignature === razorpay_signature) {
+    await userModel.findByIdAndUpdate(req.userId, { isPremium: true });
+    res.json({ success: true, message: "Payment verified successfully" });
+  } else {
+    res.status(400).json({ success: false, message: "Invalid signature" });
+  }
 };
