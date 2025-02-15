@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useDropzone } from "react-dropzone";
 import axios from "axios";
+import { UploadCloud, XCircle } from "lucide-react";
+import Header from "./Header";
+import Sidebar from "./Sidebar";
 
-const getMimeType = (file: File) => {
-  return file.type && file.type !== "" ? file.type : "application/octet-stream";
-};
+const getMimeType = (file: File) => file.type || "application/octet-stream";
 
 const FileUpload = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -39,19 +41,6 @@ const FileUpload = () => {
     fetchUploadUrl();
   }, [file]);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      const selectedFile = event.target.files[0];
-      setFile(selectedFile);
-
-      if (selectedFile.type.startsWith("image/")) {
-        setPreview(URL.createObjectURL(selectedFile));
-      } else {
-        setPreview(null);
-      }
-    }
-  };
-
   const handleUpload = async () => {
     if (!file || !uploadUrl) {
       setMessage("File or upload URL is missing.");
@@ -72,12 +61,10 @@ const FileUpload = () => {
         },
       });
 
-      const fileName = file.name;
-
       const { data } = await axios.post(
         "http://localhost:8080/file/save-file",
         {
-          name: fileName,
+          name: file.name,
           type: fileType,
           size: file.size,
           url: uploadUrl,
@@ -85,7 +72,7 @@ const FileUpload = () => {
         { withCredentials: true }
       );
 
-      setMessage("File uploaded and saved successfully!");
+      setMessage("File uploaded successfully!");
       setDownloadUrl(data.file.url);
       setFile(null);
       setPreview(null);
@@ -98,60 +85,94 @@ const FileUpload = () => {
     }
   };
 
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    if (acceptedFiles.length > 0) {
+      const selectedFile = acceptedFiles[0];
+      setFile(selectedFile);
+
+      if (selectedFile.type.startsWith("image/")) {
+        setPreview(URL.createObjectURL(selectedFile));
+      } else {
+        setPreview(null);
+      }
+    }
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    multiple: false,
+    accept: { "image/*": [], "application/pdf": [] },
+  });
+
   return (
-    <div className="p-4 border rounded-lg shadow-lg max-w-md mx-auto bg-white">
-      <input
-        type="file"
-        onChange={handleFileChange}
-        className="block w-full text-sm text-gray-600 border border-gray-300 rounded-lg cursor-pointer p-2"
-      />
+    <div className="flex">
+      {/* Sidebar */}
+      <Sidebar />
+   
 
-      {file && (
-        <div className="mt-2 text-sm text-gray-700">
-          <p>
-            <strong>File:</strong> {file.name}
-          </p>
-          <p>
-            <strong>Size:</strong> {(file.size / 1024 / 1024).toFixed(2)} MB
-          </p>
-        </div>
-      )}
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col items-center justify-center min-h-screen bg-gray-100">
+        {/* Header */}
+       
 
-      {preview && (
-        <img src={preview} alt="Preview" className="mt-3 w-full h-40 object-cover rounded-lg" />
-      )}
-
-      <button
-        onClick={handleUpload}
-        disabled={uploading || !uploadUrl}
-        className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 mt-3 rounded-lg disabled:bg-gray-400"
-      >
-        {uploading ? `Uploading ${progress}%...` : "Upload File"}
-      </button>
-
-      {uploading && (
-        <div className="mt-2 w-full bg-gray-300 rounded">
+        <div className="p-6 w-full max-w-lg bg-white shadow-xl rounded-lg text-center">
           <div
-            className="bg-blue-500 text-xs font-medium text-white text-center py-1 rounded"
-            style={{ width: `${progress}%` }}
+            {...getRootProps()}
+            className={`border-2 border-dashed ${
+              isDragActive ? "border-green-500" : "border-gray-300"
+            } p-6 rounded-lg cursor-pointer transition duration-200`}
           >
-            {progress}%
+            <input {...getInputProps()} />
+            <UploadCloud size={40} className="mx-auto text-gray-500" />
+            <p className="text-gray-700 mt-2">
+              {isDragActive ? "Drop the file here..." : "Drag & drop a file or click to upload"}
+            </p>
           </div>
+
+          {file && (
+            <div className="mt-4 flex flex-col items-center">
+              {preview && <img src={preview} alt="Preview" className="w-32 h-32 object-cover rounded-lg mb-2" />}
+              <p className="text-sm font-medium">{file.name}</p>
+              <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+
+              <button
+                onClick={() => setFile(null)}
+                className="mt-2 text-red-500 flex items-center gap-1 hover:text-red-700"
+              >
+                <XCircle size={18} />
+                Remove File
+              </button>
+            </div>
+          )}
+
+          <button
+            onClick={handleUpload}
+            disabled={uploading || !file}
+            className="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg disabled:bg-gray-400"
+          >
+            {uploading ? `Uploading ${progress}%...` : "Upload File"}
+          </button>
+
+          {uploading && (
+            <div className="mt-2 w-full bg-gray-300 rounded">
+              <div
+                className="bg-blue-500 text-xs font-medium text-white text-center py-1 rounded"
+                style={{ width: `${progress}%` }}
+              >
+                {progress}%
+              </div>
+            </div>
+          )}
+
+          {message && <p className="mt-2 text-sm text-gray-600">{message}</p>}
+
+          {downloadUrl && (
+            <a href={downloadUrl} target="_blank" rel="noopener noreferrer" className="mt-3 block text-blue-600 underline">
+              Download File
+            </a>
+          )}
         </div>
-      )}
-
-      {message && <p className="mt-2 text-sm text-gray-600">{message}</p>}
-
-      {downloadUrl && (
-        <a
-          href={downloadUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block mt-3 text-center text-blue-600 underline"
-        >
-          Download File
-        </a>
-      )}
+      </div>
     </div>
   );
 };
