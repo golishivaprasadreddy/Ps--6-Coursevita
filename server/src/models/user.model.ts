@@ -14,13 +14,21 @@ const UserSchema = new Schema({
     type: String,
     required: true,
   },
-    avatar: {
-        type: String,
+  avatar: {
+    type: String,
+    required: false,
+  },
+  isPremium: {
+    type: Boolean,
+    default: false,
+  },
+  files: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "File",
+      default: [],
     },
-    files: {
-        type: Schema.Types.ObjectId,
-        ref: "File",
-    }
+  ],
 });
 
 export const userModel = model("User", UserSchema);

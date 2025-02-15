@@ -13,6 +13,7 @@ export const signupUser = async (req: Request, res: Response): Promise<void> => 
   const user = await userModel.create({ email, password: hashPassword, fullName });
 
   const token = generateToken(user._id.toString());
+  res.header("Authorization", token);
   res.cookie("token", token);
   res.status(201).json({ token });
   return;
@@ -33,6 +34,49 @@ export const signinUser = async (req: Request, res: Response): Promise<void> => 
     return;
   }
   const token = generateToken(user._id.toString());
+  res.header("Authorization", token);
+  res.cookie("token", token);
   res.status(200).json({ token });
   return;
 };
+
+export const updateUser = async (req: Request, res: Response): Promise<void> => {
+  const { fullName, avatar, password } = req.body;
+  const userId = req.userId; 
+
+  if (!userId) {
+    res.status(401).json({ message: "Unauthorized" });
+    return;
+  }
+
+  const user = await userModel.findById(userId);
+  if (!user) {
+    res.status(404).json({ message: "User not found" });
+    return;
+  }
+
+  if (fullName) user.fullName = fullName;
+  if (avatar) user.avatar = avatar;
+  if (password) user.password = hashSync(password, 10);
+
+  await user.save();
+  res.status(200).json({ message: "Profile updated successfully" });
+};
+
+export const getProfile = async (req: Request, res: Response): Promise<void> => {
+  const userId = req.userId;
+
+  if (!userId) {
+    res.status(401).json({ message: "Unauthorized" });
+    return;
+  }
+
+  const user = await userModel.findById(userId).select("-password"); // Exclude password
+  if (!user) {
+    res.status(404).json({ message: "User not found" });
+    return;
+  }
+
+  res.status(200).json(user);
+};
+
