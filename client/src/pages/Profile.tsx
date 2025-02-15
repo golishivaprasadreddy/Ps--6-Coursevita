@@ -38,10 +38,11 @@ const UserProfile = () => {
     fetchUserProfile();
   }, []);
 
-  const handleDownload = async (fileName: string) => {
+  const handleDownload = async (fileId: string) => {
     try {
-      const response = await axios.get(
-        `http://localhost:8080/file/download?fileName=${encodeURIComponent(fileName)}`,
+      const response = await axios.post(
+        `http://localhost:8080/file/download`,
+        { fileId }, // Send fileId in the request body
         { withCredentials: true }
       );
   
@@ -54,6 +55,7 @@ const UserProfile = () => {
       console.error("Error generating download URL:", error);
     }
   };
+  
   
 
   if (loading) return <div className="text-center mt-10 text-lg">Loading...</div>;
@@ -90,7 +92,7 @@ const UserProfile = () => {
             >
               <span>{file.name}</span>
               <button
-                onClick={() => handleDownload(file.url)}
+                onClick={() => handleDownload(file._id)}
                 className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
               >
                 Download

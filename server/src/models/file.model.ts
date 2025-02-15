@@ -8,14 +8,13 @@ const FileSchema = new Schema(
     },
     type: {
       type: String,
-      required: true,
-      enum: ["image", "video", "document", "audio", "other"],
+      required: true
     },
     size: {
       type: Number,
       required: true,
     },
-    url: {
+    key: {
       type: String,
       required: true,
     },
