@@ -47,7 +47,7 @@ export const saveFile = async (req: Request, res: Response) => {
       const { name, type, size, url } = req.body;
       const admin = req.userId;
   
-      if (!name || !type || !size || !url || !admin) {
+      if (!name || !type || !size || !url) {
         res.status(400).json({ message: "All fields are required" });
         return;
       }
