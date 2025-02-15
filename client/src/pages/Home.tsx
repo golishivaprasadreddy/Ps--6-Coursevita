@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Route, Routes, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../components/sidebar";
 import Signin from "./signin";
 import Signup from "./signup";
 import FileUpload from "../components/fileupload";
