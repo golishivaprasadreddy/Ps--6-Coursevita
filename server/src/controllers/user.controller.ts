@@ -79,4 +79,3 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
 
   res.status(200).json(user);
 };
-
