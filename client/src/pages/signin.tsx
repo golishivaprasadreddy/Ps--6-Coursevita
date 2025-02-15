@@ -1,17 +1,34 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Signin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    console.log({ email, password });
-    // On successful sign-in, redirect to home page
-    navigate('/');
-  };
+const handleSubmit = async (event: React.FormEvent) => {
+  event.preventDefault();
+
+  try {
+    const response = await axios.post(
+      "http://localhost:8080/user/signin",
+      { email, password },
+      { withCredentials: true } // Ensures cookies (JWT token) are sent/received
+    );
+
+    console.log("Sign-in successful:", response.data);
+    
+    // Store authentication token in localStorage (if needed)
+    localStorage.setItem("token", response.data.token);
+
+    // Redirect to home page
+    navigate("/");
+  } catch (error: any) {
+    console.error("Sign-in failed:", error.response?.data?.message || error.message);
+    alert(error.response?.data?.message || "Sign-in failed. Please try again.");
+  }
+};
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-blue-600 to-purple-600 p-4">

@@ -1,5 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
+
+const getMimeType = (file: File) => {
+  return file.type && file.type !== "" ? file.type : "application/octet-stream";
+};
 
 const FileUpload = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -7,13 +11,39 @@ const FileUpload = () => {
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
+  const [uploadUrl, setUploadUrl] = useState<string | null>(null);
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [fileType, setFileType] = useState<string>("application/octet-stream");
+
+  useEffect(() => {
+    if (!file) return;
+
+    const fetchUploadUrl = async () => {
+      try {
+        const mimeType = getMimeType(file);
+        setFileType(mimeType);
+
+        const { data } = await axios.post(
+          "http://localhost:8080/file/puturl",
+          { fileType: mimeType },
+          { withCredentials: true }
+        );
+
+        setUploadUrl(data.uploadUrl);
+      } catch (error) {
+        console.error("Error fetching upload URL:", error);
+        setMessage("Failed to get upload URL.");
+      }
+    };
+
+    fetchUploadUrl();
+  }, [file]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const selectedFile = event.target.files[0];
       setFile(selectedFile);
-      
-      // Generate a preview if it's an image
+
       if (selectedFile.type.startsWith("image/")) {
         setPreview(URL.createObjectURL(selectedFile));
       } else {
@@ -23,8 +53,8 @@ const FileUpload = () => {
   };
 
   const handleUpload = async () => {
-    if (!file) {
-      setMessage("Please select a file.");
+    if (!file || !uploadUrl) {
+      setMessage("File or upload URL is missing.");
       return;
     }
 
@@ -32,18 +62,8 @@ const FileUpload = () => {
       setUploading(true);
       setMessage("");
 
-      // Get pre-signed URL from the backend
-      const { data } = await axios.post(
-        "http://localhost:8080/file/puturl",
-        { fileType: file.type },
-        { withCredentials: true }
-      );
-
-      const uploadUrl = data.uploadUrl;
-
-      // Upload file to S3 with progress tracking
       await axios.put(uploadUrl, file, {
-        headers: { "Content-Type": file.type },
+        headers: { "Content-Type": fileType },
         onUploadProgress: (progressEvent) => {
           const percentCompleted = Math.round(
             (progressEvent.loaded * 100) / (progressEvent.total || file.size)
@@ -52,19 +72,21 @@ const FileUpload = () => {
         },
       });
 
-      // Save file metadata in the database
-      await axios.post(
+      const fileName = file.name;
+
+      const { data } = await axios.post(
         "http://localhost:8080/file/save-file",
         {
-          name: file.name,
-          type: file.type,
+          name: fileName,
+          type: fileType,
           size: file.size,
-          url: uploadUrl.split("?")[0],
+          url: uploadUrl,
         },
         { withCredentials: true }
       );
 
-      setMessage("File uploaded successfully!");
+      setMessage("File uploaded and saved successfully!");
+      setDownloadUrl(data.file.url);
       setFile(null);
       setPreview(null);
     } catch (error) {
@@ -84,16 +106,27 @@ const FileUpload = () => {
         className="block w-full text-sm text-gray-600 border border-gray-300 rounded-lg cursor-pointer p-2"
       />
 
+      {file && (
+        <div className="mt-2 text-sm text-gray-700">
+          <p>
+            <strong>File:</strong> {file.name}
+          </p>
+          <p>
+            <strong>Size:</strong> {(file.size / 1024 / 1024).toFixed(2)} MB
+          </p>
+        </div>
+      )}
+
       {preview && (
         <img src={preview} alt="Preview" className="mt-3 w-full h-40 object-cover rounded-lg" />
       )}
 
       <button
         onClick={handleUpload}
-        disabled={uploading}
+        disabled={uploading || !uploadUrl}
         className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 mt-3 rounded-lg disabled:bg-gray-400"
       >
-        {uploading ? "Uploading..." : "Upload File"}
+        {uploading ? `Uploading ${progress}%...` : "Upload File"}
       </button>
 
       {uploading && (
@@ -108,6 +141,17 @@ const FileUpload = () => {
       )}
 
       {message && <p className="mt-2 text-sm text-gray-600">{message}</p>}
+
+      {downloadUrl && (
+        <a
+          href={downloadUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block mt-3 text-center text-blue-600 underline"
+        >
+          Download File
+        </a>
+      )}
     </div>
   );
 };

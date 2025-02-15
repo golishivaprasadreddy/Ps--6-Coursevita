@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -7,17 +8,31 @@ const Signup = () => {
   const [fullName, setFullName] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    console.log({ email, password, fullName });
-    navigate("/");
+
+    try {
+      const response = await axios.post(
+        "http://localhost:8080/user/signup",
+        { fullName, email, password },
+        { withCredentials: true }
+      );
+
+      console.log("Signup successful:", response.data);
+
+      // Redirect to login page after successful signup
+      navigate("/");
+    } catch (error: any) {
+      console.error("Signup failed:", error.response?.data?.message || error.message);
+      alert(error.response?.data?.message || "Signup failed. Please try again.");
+    }
   };
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 p-4">
       <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-200">
         <h2 className="text-3xl font-bold text-center text-gray-900 mb-6">Create an Account</h2>
-        
+
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700">
@@ -74,7 +89,7 @@ const Signup = () => {
 
         <p className="text-center text-sm text-gray-600 mt-4">
           Already have an account?{" "}
-          <a href="/signup" className="text-blue-500 hover:underline">
+          <a href="/signin" className="text-blue-500 hover:underline">
             Sign in
           </a>
         </p>

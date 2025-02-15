@@ -4,6 +4,7 @@ import Sidebar from "../components/sidebar";
 import Signin from "./signin";
 import Signup from "./signup";
 import FileUpload from "../components/fileupload";
+import UserProfile from "./Profile";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -43,6 +44,7 @@ const App = () => {
         <Route path="/signin" element={<Signin />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/fileupload" element={<FileUpload />} />
+        <Route path="/profile" element={<UserProfile />} />
       </Routes>
     </Router>
   );
